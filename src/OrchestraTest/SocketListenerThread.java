@@ -50,6 +50,4 @@ public class SocketListenerThread implements Runnable {
       }
       
    }
-   
-   
 }
