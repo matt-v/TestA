@@ -53,15 +53,14 @@ class ClientThread implements Runnable, JMC {
             in.read(cStr);
             String currentLine = new String( cStr );
             
-            // split up by broadcast
-            String [] splitLine = currentLine.split( "broadcast" );
+            // if more than one command slip come through at a time
+            String [] commands = currentLine.split( "!" );
             
-            // run through each part of the array
-            for ( int i = 0; i < splitLine.length; ++i ) {
+            // call the interpretor
+            for ( int i = 1; i < commands.length; ++i ) {
+               Interpretor.getInstance().interp( commands[i] );
+            }
                
-               parseBroadcast( splitLine[i] );   // parse and execute broadcast
-               
-            } // end for            
          } // end while
       } // end try
       catch ( Exception e ) {
