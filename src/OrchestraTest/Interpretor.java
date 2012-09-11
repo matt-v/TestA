@@ -7,6 +7,8 @@ package OrchestraTest;
 import java.util.HashMap;
 import java.util.Map;
 
+import jm.music.data.Note;
+
 /**
  *
  * @author mattvaughan
@@ -21,7 +23,7 @@ public class Interpretor {
    
    // We'll need this since Java doesn't allow first class refs...
    public interface Command {
-      void invoke(String arguments);
+      void invoke(String arguments, String caller );
    }
    
    
@@ -32,13 +34,13 @@ public class Interpretor {
    
       // initialize our hash map with procedures
       functionMap.put("test", new Command() 
-              { public void invoke(String arguments)          { System.out.println("Test: " + arguments); } });
+              { public void invoke(String arguments, String caller)          { System.out.println("Test: " + arguments); } });
       
       functionMap.put("addnotes", new Command() 
-              { public void invoke(String arguments)          { addNotes(arguments); } });
+              { public void invoke(String arguments, String caller)          { addNotes(arguments, caller); } });
       
       functionMap.put("clearphrase", new Command() 
-              { public void invoke(String arguments)          { clearPhrase(arguments); } });
+              { public void invoke(String arguments, String caller)          { clearPhrase(arguments, caller ); } });
    }
    
    /**
@@ -57,13 +59,14 @@ public class Interpretor {
     * Calls the interpretor
     * @param procedure the string which maps to the correct procedure
     * @param arguments the string of arguments for the procedure
+    * @param callers the name of the thread that called the interpretor
     */
-   public void interp( String procedure, String arguments ) {
+   public void interp( String procedure, String arguments, String caller ) {
       procedure = procedure.trim().toLowerCase();
       arguments = arguments.trim().toLowerCase();
       
       try {
-         functionMap.get(procedure).invoke(arguments);
+         functionMap.get(procedure).invoke(arguments, caller );
       } catch (Exception e) {
          System.err.println("Bad function name: " +procedure+" passed to interpretor!");
       }
@@ -72,23 +75,33 @@ public class Interpretor {
    /**
     * Calls the interpretor
     * @param procedureAndArguments a string with the procedure name and arguments separated by a '#'
+    * @param caller the name of the thread that called the interpretor
     */
-   public void interp( String procedureAndArguments ) {      
+   public void interp( String procedureAndArguments, String caller ) {      
       String procedure = procedureAndArguments.split("#")[0];
       String arguments = procedureAndArguments.split("#")[1];
       
-      interp(procedure, arguments);    // I don't want to have to change it in two places...
+      interp(procedure, arguments, caller);    // I don't want to have to change it in two places...
    }
    
    
    
    /* procedures  **************************************************************/
    
-   private void addNotes(String arguments) {
+   private void addNotes(String arguments, String caller) {
       System.out.println("addNotes() with args: " + arguments);
+      
+      int noteNum       = new Integer(arguments.split(",")[0]).intValue();
+      double noteLength  = new Double(arguments.split(",")[1]).doubleValue();
+      
+      Note myNote = new Note( noteNum, noteLength );
+      
+      ScoreHolder.getInstance().phraseMap.get( caller ).addNote( myNote );
    }
    
-   private void clearPhrase(String arguments) {
+   private void clearPhrase(String arguments, String caller ) {
       System.out.println("clearPhrase() with args: " + arguments);
+      
+      ScoreHolder.getInstance().phraseMap.get( caller ).empty();
    }
 }

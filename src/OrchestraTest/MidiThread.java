@@ -24,7 +24,7 @@ class MidiThread implements Runnable {
          while ( ! scoreHolder.getQuit() ) {
             
             // clean up and assebmle the score
-            scoreHolder.Assemble(); 
+            scoreHolder.assemble(); 
             
             if (   scoreHolder.getEndTime() != 0 &&      // make sure there is music to play
                    scoreHolder.getPlayScore() ) {        // and that it is time to play it

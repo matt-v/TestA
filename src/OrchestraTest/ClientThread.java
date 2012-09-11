@@ -19,7 +19,7 @@ import jm.music.data.Note;
 class ClientThread implements Runnable, JMC {
    
    private Thread t;                // for the new socket thread
-   private Socket clientSocket;           // ip address of this thread's scratch client
+   private Socket clientSocket;     // ip address of this thread's scratch client
    
    private boolean live = true;     // should this thread continue... used for while loop below
    
@@ -42,6 +42,9 @@ class ClientThread implements Runnable, JMC {
    public void run() {
       try {
          
+         // Add this thread (user) to the ensemble
+         scoreHolder.addPersonToEnsemble( t.getName() );
+               
          // The BufferReader will give us input from Scratch
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream() ) );
 
@@ -58,7 +61,7 @@ class ClientThread implements Runnable, JMC {
             
             // call the interpretor
             for ( int i = 1; i < commands.length; ++i ) {
-               Interpretor.getInstance().interp( commands[i] );
+               Interpretor.getInstance().interp( commands[i], t.getName() );
             }
                
          } // end while
@@ -69,68 +72,8 @@ class ClientThread implements Runnable, JMC {
       
       System.out.println( "Exiting " + t.getName() + "." );        // for debugging
    }
-   
-   /**
-    * We parse the broadcasts here
-    * @param broadcast 
-    */
-   private void parseBroadcast(String broadcast) {
-      /*
-       * Incoming broadcasts should have the following setup
-       * Command#Phrase/Part Number#command specific info#command specific info#...#loop-x@10
-       * example:
-       *    addNotes#1#60-QN#rest-EN#62-QN
-       *    - This would add Notes to Phrase[1] 
-       * 
-       *    addNotes#1#60-WN#loop-f@10
-       *    - This would loop the whole note 60 forever starting at phrase 10
-       */
-      
-      
-      // we only care about the parts which have quotes...
-      if (broadcast.contains("\"")) {
-
-         broadcast = broadcast.trim();    // you MUST trim the string
-         
-         // get just the part between the quotes
-         String quotedText = broadcast.substring(1, broadcast.length() - 1);
-         
-         // Split using '@' as a delimiter (gives us the timing of the action)
-         String [] splitOnAt = quotedText.split("@");
-         //    NOTE: if splitOnAt.size() == 1 then the event is executed next time through the loop
-         //          if splitOnAt.size() == 2 then the event is executed when
-         //             the phrase number matches new Integer(splitOnAt[1]).intValue();
-         
-         
-         // Split left side of SplitOnAt using '#' as a delimiter
-         String [] splitLine = splitOnAt[0].split("#");
-
-         // ********* DEBUG OUTPUT *************
-         System.out.println( "++  " + quotedText );
-         for ( int i = 0; i < splitLine.length; ++i ) {
-            System.out.println( "+ " + i + " ++ "+ splitLine[i] );
-         }
-         // ************************************
-         
-         splitLine[0] = splitLine[0].toLowerCase();   // because commands are not case-sensitive
-          
-         if ( splitOnAt.length == 2 ) {
-            
-            long phraseNumber = new Long( splitOnAt[1] ).longValue();
-            
-            // add the event to futureEvents
-            FutureEvents.getInstance().addEvent(splitLine, phraseNumber, this);
-         }
-         else if ( splitOnAt.length == 1 ) {
-            executeBroadcast( splitLine );               // execute the commands
-         }
-         else {
-            // there were to many @ signs in the broadcast string!!
-            System.out.println( "DEGUG--Too many @ sings in broadcast string!" );
-         }
-      }
-   }
-   
+ 
+   /*
    public void executeBroadcast( String[] splitLine ) {
 
       // check to see what command we are executing
@@ -200,13 +143,13 @@ class ClientThread implements Runnable, JMC {
          // command not found
       }
    }
-   
+   */
    /** 
     * helper function for addNotes() and addChords()
     * @param noteLengthString
     * @return 
     */
-   private double findNoteLength(String noteLengthString) {
+/*   private double findNoteLength(String noteLengthString) {
       
       // because we dont want to be case-sensitive
       noteLengthString = noteLengthString.toUpperCase();
@@ -227,14 +170,14 @@ class ClientThread implements Runnable, JMC {
       else if (noteLengthString.matches("HNT")) { return HNT;  } // half note triple
       else                                      { return QN;   } // defualt to quarter note
    }
-   
+*/ 
    /**
     * Helper function for addChord()
     * @param baseNote root note of the chord (c for c-major)
     * @param chordType the type of chord to build. major/minor/ect...
     * @return an integer array of the notes for the chord
     */   
-   private int [] buildChord( int baseNote, String chordType ) {
+/*   private int [] buildChord( int baseNote, String chordType ) {
       
       int [] notes = { baseNote };
       
@@ -314,12 +257,12 @@ class ClientThread implements Runnable, JMC {
 
       return notes;
    }
-   
+*/   
    /**
     * helper function for addNotes and addChords
     * @param splitLine 
     */
-   private long getPhraseToDieOn( String[] splitLine ) {
+/*   private long getPhraseToDieOn( String[] splitLine ) {
       
       long phraseToDieOn;
       
@@ -349,12 +292,12 @@ class ClientThread implements Runnable, JMC {
       
       return phraseToDieOn;
    }
-   
+*/   
    /**
     * adds notes from broadcast
     * @param splitLine broadcast string split on #
     */
-   private void addNotes(String[] splitLine) {
+/*   private void addNotes(String[] splitLine) {
       
       // gets the Phrase Number this note dies on
       long phraseToDieOn = getPhraseToDieOn( splitLine );
@@ -413,79 +356,5 @@ class ClientThread implements Runnable, JMC {
          }
       } // end for
    }
-   
-   // adds chords to a phrase
-   private void addChords( String [] splitLine ) {
-      
-      // gets the Phrase Number this note dies on
-      long phraseToDieOn = getPhraseToDieOn( splitLine );
-      
-      // Used to clean up broadcast (removes #loop-x)
-      String [] loopInstructions = splitLine[splitLine.length-1].split("-");  // split the last operand on '-'
-      
-      // if the last operand is loop
-      if ( loopInstructions[0].matches("loop") ) {       // left of the dash was the command loop
-
-         // newSplitLine will have all the note commands but not the loop command
-         String [] newSplitLine = new String[ splitLine.length - 1 ];
-         
-         // fill newSplitLine with all commands except 'loop'
-         for ( int i = 0 ; i < newSplitLine.length; ++i ) {
-            newSplitLine[i] = splitLine[i];
-         }
-         // puts the result in splitLine
-         splitLine = newSplitLine;
-      }
-      
-      // must have at least 3 total operands, the command, phrase number, and chord to add
-      if (splitLine.length < 3) {
-         throw new RuntimeException();
-      }
-      
-      // add each chords
-      for (int i = 2; i < splitLine.length; ++i) {
-
-         String noteLengthString = splitLine[i].split("-")[1];
-         int [] noteNumbers;
-         Double noteLength = new Double( findNoteLength(noteLengthString) ); // this value will be adjusted below
-
-         // Is it a rest or a regular chord?
-         if (splitLine[i].split("-")[0].toLowerCase().matches("rest")) {
-            noteNumbers = new int[1];
-            noteNumbers[0] = REST; // there is only one note in the chord, the rest note
-         } else {
-            
-            // gets the base note and the chord type (ex: '60:Major')
-            Integer baseNote = new Integer( splitLine[i].split("-")[0].split(":")[0] );
-            String chordType = new String( splitLine[i].split("-")[0].split(":")[1] );
-            
-            noteNumbers = buildChord(baseNote.intValue(), chordType);
-         }
-         
-         // add Chords to phrase
-         try {
-            // gets the phrase number from the second operand in splitLine
-            Integer index = new Integer(splitLine[1]);             // gets the index for the phrase number
-            
-            double offset = 0;
-            for ( int j = 0; j < noteNumbers.length; ++j ) {
-               
-               SpecialNote note = new SpecialNote( noteNumbers[j], noteLength.doubleValue(), t.getName(), phraseToDieOn );
-               /*    NEED TO FIX THIS UP
-                *    START TIMES MUST BE THE SAME
-                *    RIGHT NOW THIS WOULD WORK AS AN ARPEGGIO
-                */               
-               //note.setOffset( offset );
-               //offset -= noteLength.doubleValue();
-               scoreHolder.phrases[ index.intValue() ].addNote(note);
-              
-            }
-            //testNote.setSampleStartTime(M);
-
-            //scoreHolder.phrases[ index.intValue()].addChord(noteNumbers, noteLength.doubleValue());
-         } catch (Exception e) {
-            System.err.println("Error adding chords in addChords()");
-         }
-      } // end for
-   }
+*/   
 }
