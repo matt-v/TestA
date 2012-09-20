@@ -18,12 +18,16 @@ public class Interpretor {
    // singleton instance of the interpretor
    private static Interpretor SINGLETON_INSTANCE = new Interpretor();
    
+   
+   // we should hold on to the ScoreHolder locally...
+   ScoreHolder scoreHolder = ScoreHolder.getInstance();
+   
    // our hashmap for functions
    private Map<String,Command> functionMap = new HashMap<String,Command>();
    
    // We'll need this since Java doesn't allow first class refs...
    public interface Command {
-      void invoke(String arguments, String caller );
+      TypeAndValue invoke(String arguments, String caller );
    }
    
    
@@ -33,14 +37,16 @@ public class Interpretor {
    private Interpretor() {
    
       // initialize our hash map with procedures
-      functionMap.put("test", new Command() 
-              { public void invoke(String arguments, String caller)          { System.out.println("Test: " + arguments); } });
       
-      functionMap.put("addnotes", new Command() 
-              { public void invoke(String arguments, String caller)          { addNotes(arguments, caller); } });
+      functionMap.put("addnote", new Command() 
+              { public TypeAndValue invoke(String arguments, String caller)   { return addNote(arguments, caller); } });
       
       functionMap.put("clearphrase", new Command() 
-              { public void invoke(String arguments, String caller)          { clearPhrase(arguments, caller ); } });
+              { public TypeAndValue invoke(String arguments, String caller)   { return clearPhrase(arguments, caller ); } });
+      
+      functionMap.put("setinstrument", new Command() 
+              { public TypeAndValue invoke(String arguments, String caller)   { return setInstrument(arguments, caller ); } });
+
    }
    
    /**
@@ -61,15 +67,20 @@ public class Interpretor {
     * @param arguments the string of arguments for the procedure
     * @param callers the name of the thread that called the interpretor
     */
-   public void interp( String procedure, String arguments, String caller ) {
+   public TypeAndValue interp( String procedure, String arguments, String caller ) {
+      
+      TypeAndValue ret = new MyVoid();
+      
       procedure = procedure.trim().toLowerCase();
       arguments = arguments.trim().toLowerCase();
       
       try {
-         functionMap.get(procedure).invoke(arguments, caller );
+         ret = functionMap.get(procedure).invoke(arguments, caller );
       } catch (Exception e) {
          System.err.println("Bad function name: " +procedure+" passed to interpretor!");
       }
+      
+      return ret;
    }
    
    /**
@@ -77,18 +88,28 @@ public class Interpretor {
     * @param procedureAndArguments a string with the procedure name and arguments separated by a '#'
     * @param caller the name of the thread that called the interpretor
     */
-   public void interp( String procedureAndArguments, String caller ) {      
-      String procedure = procedureAndArguments.split("#")[0];
-      String arguments = procedureAndArguments.split("#")[1];
+   public TypeAndValue interp( String procedureAndArguments, String caller ) {      
       
-      interp(procedure, arguments, caller);    // I don't want to have to change it in two places...
+      int firstAt       = procedureAndArguments.indexOf("@");
+      int firstPound    = procedureAndArguments.indexOf("(");
+      int lastPound     = procedureAndArguments.lastIndexOf(")");
+ 
+      // split from first @ to first (
+      String procedure  = procedureAndArguments.substring(firstAt+1, firstPound);
+      
+      // and puts the remainder in arguments
+      String arguments  = procedureAndArguments.substring( firstPound+1, lastPound );
+      
+      System.out.println( procedure + " with args " + arguments );
+      
+      return interp(procedure, arguments, caller);    // I don't want to have to change it in two places...
    }
    
    
    
    /* procedures  **************************************************************/
    
-   private void addNotes(String arguments, String caller) {
+   private TypeAndValue addNote(String arguments, String caller) {
       System.out.println("addNotes() with args: " + arguments);
       
       int noteNum       = new Integer(arguments.split(",")[0]).intValue();
@@ -96,12 +117,57 @@ public class Interpretor {
       
       Note myNote = new Note( noteNum, noteLength );
       
-      ScoreHolder.getInstance().phraseMap.get( caller ).addNote( myNote );
+      scoreHolder.phraseMap.get( caller ).addNote( myNote );
+      
+      return new MyVoid();
    }
    
-   private void clearPhrase(String arguments, String caller ) {
+   private TypeAndValue clearPhrase(String arguments, String caller ) {
       System.out.println("clearPhrase() with args: " + arguments);
+      // if clear phrase was passed arguments they get ignored...
+      // the caller is used to determine the phrase that is cleared
       
-      ScoreHolder.getInstance().phraseMap.get( caller ).empty();
+      scoreHolder.phraseMap.get( caller ).empty();
+      
+      return new MyVoid();
    }
+   
+   private TypeAndValue setInstrument( String arguments, String caller ) {
+      System.out.println("setInstrument() with args: " +arguments );
+      
+      // set it to zero so java my IDE doesn't yell at me
+      int instrumentNumber = 0;
+      
+      // if the argument is a function evaluate the function, otherwise it's a value...
+      if ( arguments.contains( "@" ) ) {
+         
+         // call the interpretor on the argument, making the argument the procedure and argument
+         TypeAndValue value = interp( arguments, caller );
+         
+         if ( value.getType().compareTo("Integer") == 0 ) {
+            
+            // we just checked the type above so we should be comfortable casting here
+            Integer theValue = (Integer) value.getValue();
+            
+            instrumentNumber = theValue.intValue();
+         }
+         else {
+            System.err.println("Interpretor type mismatch in Interpretor.setInstument()!");
+            System.err.println("Expected Integer and got " + value.getType() );
+            System.exit(-1);
+         }
+          
+      }
+      // else... the argument is a value
+      else {
+         instrumentNumber = new Integer( arguments.split(",")[0] ).intValue();
+      }
+      
+      // finally, change the instrument number and return a MyVoid to the interpretor
+      scoreHolder.partMap.get( caller ).setInstrument( instrumentNumber );
+      
+      return new MyVoid();
+   }
+   
 }
+

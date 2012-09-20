@@ -61,7 +61,8 @@ class ClientThread implements Runnable, JMC {
             
             // call the interpretor
             for ( int i = 1; i < commands.length; ++i ) {
-               Interpretor.getInstance().interp( commands[i], t.getName() );
+               TypeAndValue temp = Interpretor.getInstance().interp( commands[i], t.getName() );
+               System.out.println( temp.getType() );
             }
                
          } // end while
