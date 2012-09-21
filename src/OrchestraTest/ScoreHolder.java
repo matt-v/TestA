@@ -6,6 +6,7 @@ package OrchestraTest;
 
 import java.util.*;
 import jm.JMC;
+import jm.music.data.CPhrase;
 import jm.music.data.Part;
 import jm.music.data.Phrase;
 import jm.music.data.Score;
@@ -31,7 +32,7 @@ class ScoreHolder implements JMC {
       
    public Map<String,Phrase> phraseMap;            // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
    public Map<String,Part> partMap;                // Maps user clientThreads to Parts     + KEYS SHOULD MATCH
-   
+   public Map<String,CPhrase> chordMap;			   // Maps user clientThreads to CPhrases
    
    private Score score = new Score("Our Score", tempo);
    
@@ -39,6 +40,7 @@ class ScoreHolder implements JMC {
    private ScoreHolder() {
       phraseMap = new HashMap();
       partMap   = new HashMap();
+	  chordMap  = new HashMap();
    }
    
    // adds one clientThread to the ensemble by adding a new part and phrase to their respective maps
@@ -46,9 +48,11 @@ class ScoreHolder implements JMC {
       
       Phrase newPhrase = new Phrase(0.0);                // phrase whose start time is 0.0
       Part newPart = new Part( id, PIANO, channel++ );   // part whose default instrument is PIANO
-      
+      CPhrase newCPhrase = new CPhrase();				 // default CPhrase constructor
+	  
       phraseMap.put(id, newPhrase );
       partMap.put(id, newPart );
+	  chordMap.put(id, newCPhrase );
    }
    
    /**
@@ -70,8 +74,14 @@ class ScoreHolder implements JMC {
                   
          partMap.get( keys[i] ).removeAllPhrases();                           // empty old parts
          
-         if ( phraseMap.get( keys[i] ).length() != 0 ) {                      // if the phrase is not empty
-            partMap.get( keys[i] ).addPhrase( phraseMap.get( keys[i] ) );     // add it to the part
+         if ( (phraseMap.get( keys[i] ).length() != 0 ) ||                    // if the phrase is not empty or
+                 (chordMap.get( keys[i] ).getTitle() != null) ) {             // if the cphrase is not empty
+            
+            if ( phraseMap.get( keys[i] ).length() != 0 )
+                partMap.get( keys[i] ).addPhrase( phraseMap.get( keys[i] ) ); // add phrase to the part
+            if ( chordMap.get( keys[i] ).getTitle() != null )
+                partMap.get( keys[i] ).addCPhrase( chordMap.get( keys[i] ) ); // add cphrase to the part
+
             score.addPart( partMap.get( keys[i] ) );                          // and add the part to the score
          }
       }

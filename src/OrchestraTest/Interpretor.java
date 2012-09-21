@@ -6,6 +6,7 @@ package OrchestraTest;
 
 import java.util.HashMap;
 import java.util.Map;
+import jm.music.data.*;
 
 import jm.music.data.Note;
 
@@ -47,6 +48,8 @@ public class Interpretor {
       functionMap.put("setinstrument", new Command() 
               { public TypeAndValue invoke(String arguments, String caller)   { return setInstrument(arguments, caller ); } });
 
+	  functionMap.put("addchord", new Command()
+              { public TypeAndValue invoke(String arguments, String caller)   { return addChord(arguments, caller); } });
    }
    
    /**
@@ -128,6 +131,7 @@ public class Interpretor {
       // the caller is used to determine the phrase that is cleared
       
       scoreHolder.phraseMap.get( caller ).empty();
+	  scoreHolder.chordMap.get( caller ).empty();
       
       return new MyVoid();
    }
@@ -167,6 +171,21 @@ public class Interpretor {
       scoreHolder.partMap.get( caller ).setInstrument( instrumentNumber );
       
       return new MyVoid();
+   }
+   
+   private TypeAndValue addChord(String arguments, String caller) {
+       System.out.println("addChord() with args: " + arguments);
+       
+       int noteNum1     = new Integer(arguments.split(",")[0]).intValue();
+       int noteNum2     = new Integer(arguments.split(",")[1]).intValue();
+       int noteNum3     = new Integer(arguments.split(",")[2]).intValue();
+       double noteLength = new Double(arguments.split(",")[3]).doubleValue();
+       
+       int[] notePitches = {noteNum1, noteNum2, noteNum3};
+       
+       scoreHolder.chordMap.get( caller ).addChord(notePitches, noteLength);
+       
+       return new MyVoid();
    }
    
 }
