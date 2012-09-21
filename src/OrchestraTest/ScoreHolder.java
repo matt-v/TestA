@@ -52,7 +52,7 @@ class ScoreHolder implements JMC {
 	  
       phraseMap.put(id, newPhrase );
       partMap.put(id, newPart );
-	  chordMap.put(id, newCPhrase );
+	   chordMap.put(id, newCPhrase );
    }
    
    /**

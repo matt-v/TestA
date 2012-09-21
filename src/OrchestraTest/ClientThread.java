@@ -62,7 +62,7 @@ class ClientThread implements Runnable, JMC {
             // call the interpretor
             for ( int i = 1; i < commands.length; ++i ) {
                TypeAndValue temp = Interpretor.getInstance().interp( commands[i], t.getName() );
-               System.out.println( temp.getType() );
+               System.out.println( "Returned a " + temp.getType() );
             }
                
          } // end while
@@ -71,7 +71,7 @@ class ClientThread implements Runnable, JMC {
          System.err.println("Error in " + t.getName() +".run()!");
       }
       
-      System.out.println( "Exiting " + t.getName() + "." );        // for debugging
+      System.out.println( "Exiting " + t.getName() + "." );             // for debugging
    }
  
    /*
