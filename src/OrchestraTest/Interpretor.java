@@ -26,7 +26,6 @@ public class Interpretor {
 
    // We'll need this since Java doesn't allow first class refs...
    public interface Command {
-
       TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller);
    }
 
@@ -38,37 +37,24 @@ public class Interpretor {
       // initialize our hash map with procedures
 
       functionMap.put("addnote", new Command() {
-
-         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) {
-            return addNote(arguments, caller);
-         }
-      });
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addNote(arguments, caller); }});
 
       functionMap.put("clearphrase", new Command() {
-
-         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) {
-            return clearPhrase(arguments, caller);
-         }
-      });
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return clearPhrase(arguments, caller); }});
 
       functionMap.put("setinstrument", new Command() {
-
-         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) {
-            return setInstrument(arguments, caller);
-         }
-      });
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return setInstrument(arguments, caller); }});
 
       functionMap.put("addchord", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addChord(arguments, caller); }});
+      
+      functionMap.put("+", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return plus(arguments, caller); }});
 
-         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) {
-            return addChord(arguments, caller);
-         }
-      });
    }
 
    /**
     * Get the singleton instance of the interpretor
-    *
     * @return the interpretor
     */
    public static Interpretor getInstance() {
@@ -119,7 +105,6 @@ public class Interpretor {
                   endIndex = i;              // our ending index is the last paren
                   i = arguments.length();    // so the loop terminates
                }
-
             } // end for
 
             // finally we have a current argument
@@ -157,7 +142,6 @@ public class Interpretor {
                // remove this argument from arguments
                arguments = "";
             }
-
 
             // what's the type?
             // integer
@@ -244,7 +228,7 @@ public class Interpretor {
       // the caller is used to determine the phrase that is cleared
 
       scoreHolder.phraseMap.get(caller).empty();
-      scoreHolder.chordMap.get(caller).empty();
+      //scoreHolder.chordMap.get(caller).empty();
 
       return new MyVoid();
    }
@@ -263,7 +247,10 @@ public class Interpretor {
       // check the type and if correct type get the value
       if (arguments.get(0).getType().compareTo("Integer") == 0) {
          instrumentNumber = ((Integer) arguments.get(0).getValue()).intValue();
+      } else {
+         System.err.println("setInstrument expected an Integer but got a " + arguments.get(0).getType() );
       }
+      
 
       // finally, change the instrument number and return a MyVoid to the interpretor
       scoreHolder.partMap.get(caller).setInstrument(instrumentNumber);
@@ -303,8 +290,69 @@ public class Interpretor {
 
       int[] notePitches = {noteNum1, noteNum2, noteNum3};
 
-      scoreHolder.chordMap.get(caller).addChord(notePitches, noteLength);
+      scoreHolder.phraseMap.get(caller).addChord(notePitches, noteLength);
 
       return new MyVoid();
+   }
+   
+   private TypeAndValue plus(Vector<TypeAndValue> arguments, String caller) {
+      
+      if ( arguments.size() < 1 ) {
+         System.err.println("Plus expected at least one argument and got zero.");
+         System.exit(-1);
+      }
+      
+      // our return value
+      TypeAndValue ret = new MyVoid();
+      
+      // what type of arithmetic?
+      boolean canDoInt     = true;
+      boolean canDoDouble  = true;
+      
+      // check the types, if all ints return an int, if there are any double use doubles, string fail
+      for ( int i = 0; i < arguments.size(); ++i ) {
+         
+         // if any argument is not an integer
+         if ( arguments.get(i).getType().compareTo("Integer") != 0 ) {
+            
+            // we cant do integer arthimetic
+            canDoInt = false;
+            
+            // if it is also not a double
+            if ( arguments.get(i).getType().compareTo("Double") != 0 ) {
+               canDoDouble = false;
+            }
+            
+         }
+      }
+      
+      if ( canDoInt ) {
+         int total = 0;
+         for ( int i = 0; i < arguments.size(); ++i ) {
+            total += ((Integer) arguments.get(i).getValue()).intValue();
+         }
+         ret = new MyInt( total );
+         
+      } else if ( canDoDouble) {
+         double total = 0;
+         for ( int i = 0; i < arguments.size(); ++i ) {
+            
+            // if it's an int
+            if ( arguments.get(i).getType().compareTo("Integer") == 0 ) {
+               total += ((Integer) arguments.get(i).getValue()).doubleValue();
+            }
+            // it must be a double
+            else {
+               total += ((Double) arguments.get(i).getValue()).doubleValue();
+            }
+            ret = new MyDouble( total );
+         }
+      
+      } else {
+         System.err.println("Error in plus()! Can only add types that are Integers or Doubles!");
+         System.exit(-1);
+      }
+      
+      return ret;    // we should never get here
    }
 }
