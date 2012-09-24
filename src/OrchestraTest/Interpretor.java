@@ -19,8 +19,10 @@ public class Interpretor {
 
    // singleton instance of the interpretor
    private static Interpretor SINGLETON_INSTANCE = new Interpretor();
+   
    // we should hold on to the ScoreHolder locally...
    ScoreHolder scoreHolder = ScoreHolder.getInstance();
+   
    // our hashmap for functions
    private Map<String, Command> functionMap = new HashMap<String, Command>();
 
@@ -38,19 +40,18 @@ public class Interpretor {
 
       functionMap.put("addnote", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addNote(arguments, caller); }});
-
+      
       functionMap.put("clearphrase", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return clearPhrase(arguments, caller); }});
-
+      
       functionMap.put("setinstrument", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return setInstrument(arguments, caller); }});
-
+      
       functionMap.put("addchord", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addChord(arguments, caller); }});
       
       functionMap.put("+", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return plus(arguments, caller); }});
-
    }
 
    /**
@@ -228,7 +229,6 @@ public class Interpretor {
       // the caller is used to determine the phrase that is cleared
 
       scoreHolder.phraseMap.get(caller).empty();
-      //scoreHolder.chordMap.get(caller).empty();
 
       return new MyVoid();
    }
@@ -295,6 +295,8 @@ public class Interpretor {
       return new MyVoid();
    }
    
+   // does MyDouble and MyInteger addition
+   //   If there is a mix then MyIntegers are promoted to MyDoubles and a MyDouble is returned
    private TypeAndValue plus(Vector<TypeAndValue> arguments, String caller) {
       
       if ( arguments.size() < 1 ) {
@@ -353,6 +355,6 @@ public class Interpretor {
          System.exit(-1);
       }
       
-      return ret;    // we should never get here
+      return ret;
    }
 }
