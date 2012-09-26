@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Matthew Vaughan
+ * matt884987@gmail.com
  */
 package OrchestraTest;
 

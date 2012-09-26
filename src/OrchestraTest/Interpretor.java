@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Matthew Vaughan
+ * matt884987@gmail.com
  */
 package OrchestraTest;
 
@@ -12,7 +12,7 @@ import jm.music.data.*;
 import jm.music.data.Note;
 
 /**
- *
+ * Singleton interpretor, recursively calls itself until it evaluates to a TypeAndValue, see interp()
  * @author mattvaughan
  */
 public class Interpretor {
@@ -197,8 +197,9 @@ public class Interpretor {
       return interpEvaluator(procedure, arguments, caller);    // I don't want to have to change it in two places...
    }
 
-   /*
+   /* *************************************************************************
     * procedures  *************************************************************
+    * *************************************************************************
     */
    private TypeAndValue addNote(Vector<TypeAndValue> arguments, String caller) {
       System.out.println("addNotes() with args: " + arguments);
