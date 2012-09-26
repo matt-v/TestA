@@ -24,21 +24,24 @@ class ScoreHolder implements JMC {
    private static ScoreHolder SINGLE_INSTANCE = new ScoreHolder();
    
    private int channel = 0;                        // the next channel to use   
-   private long phraseNumber = 0;                  // the current phrase number
+   private int phraseNumber = 0;                  // the current phrase number
                                                    //    to be incremented first time through the loop
    private boolean playScore = true;               // should we play the song
    private double tempo = 120.0;                   // song tempo   
    private boolean quit = false;                   // should we end the midi thread?
       
-   public Map<String,Phrase> phraseMap;           // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
+   public Map<String,Phrase> phraseMap;            // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
    public Map<String,Part> partMap;                // Maps user clientThreads to Parts     + KEYS SHOULD MATCH
    
-   private Score score = new Score("Our Score", tempo);
+   private Vector<ClearPhrase> futureClearPhrases; // future clearPhrase events
+   
+   private Score score = new Score("Our Score", tempo);     // the score to play
    
    // private constuctor since we're using the singleton pattern
    private ScoreHolder() {
       phraseMap = new HashMap();
       partMap   = new HashMap();
+      futureClearPhrases = new Vector<ClearPhrase>();
    }
    
    // adds one clientThread to the ensemble by adding a new part and phrase to their respective maps
@@ -95,15 +98,43 @@ class ScoreHolder implements JMC {
     * executesCurrentEvents and removes all timed out notes
     */
    public void updatePhrase() {
+      
+      clearPhrases();
       phraseNumber++;         // increment phrase number
    }
    
+   /**
+    * Stops phrases from looping forever...
+    */
+   private void clearPhrases() {
+      
+      // check each future clearPhrase
+      for ( int i = 0; i < futureClearPhrases.size(); ++i ) {
+         
+         // if it's time to remove it
+         if ( futureClearPhrases.get(i).getPhraseNum() == phraseNumber ) {
+            
+            String caller = futureClearPhrases.get(i).getCaller();
+            Interpretor.getInstance().interp("!@clearphrase()", caller );
+         }
+      }
+   }
+   
+   /**
+    * Adds a future clear phrase event
+    * @param caller the clientThread who called us
+    * @param phraseToDieOn the phraseNumber to stop playing the phrase
+    */
+   public void addClearPhrase( String caller, int phraseToDieOn ) {
+      ClearPhrase clearPhrase = new ClearPhrase(caller, phraseToDieOn);
+      futureClearPhrases.add(clearPhrase);
+   }
    
    /**
     * Gets the current phrase number
     * @return currentPhraseNumber 
     */
-   public long getPhraseNumber() {
+   public int getPhraseNumber() {
       return phraseNumber;
    }
    

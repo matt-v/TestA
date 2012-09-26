@@ -33,11 +33,12 @@ class MyVoid extends TypeAndValue {
    }
 }
 
-class MyInt extends TypeAndValue {
+
+class MyInteger extends TypeAndValue {
    
    private Integer value;
    
-   public MyInt( int value ) {
+   public MyInteger( int value ) {
       this.type = "Integer";
       this.value = value;
    }
