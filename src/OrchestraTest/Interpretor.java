@@ -52,6 +52,9 @@ public class Interpretor {
       
       functionMap.put("+", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return plus(arguments, caller); }});
+      
+      functionMap.put("currentphrase", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return currentPhrase(arguments, caller); }});
    }
 
    /**
@@ -148,7 +151,7 @@ public class Interpretor {
             // integer
             if (currentArgument.matches("\\d+")) {
                int value = new Integer(currentArgument).intValue();
-               argumentVector.add(new MyInt(value));
+               argumentVector.add(new MyInteger(value));
             } // number (double)
             else if (currentArgument.matches("\\d*.\\d+")) {
                double value = new Double(currentArgument).doubleValue();
@@ -225,8 +228,23 @@ public class Interpretor {
 
    private TypeAndValue clearPhrase(Vector<TypeAndValue> arguments, String caller) {
       System.out.println("clearPhrase() with args: " + arguments);
-      // if clear phrase was passed arguments they get ignored...
-      // the caller is used to determine the phrase that is cleared
+      
+      if ( arguments.size() > 1) {
+         System.err.println("ClearPhrase expected one or no arguments and got " + arguments.size() );
+         System.err.println("Arguments will be ignored");
+      }
+      // if we get one argument then it's a future event 
+      else if ( arguments.size() == 1 ) {
+         // argument must be an integer
+         if ( arguments.get(0).getType().compareTo("Integer") != 0 ) {
+            System.err.println("ClearPhrase expected an Integer or no arguments but got a " + arguments.get(0).getType() );
+         }
+         else {
+            int phraseToDieOn = ((Integer) arguments.get(0).getValue()).intValue();
+            scoreHolder.addClearPhrase(caller, phraseToDieOn);
+         }
+         
+      }
 
       scoreHolder.phraseMap.get(caller).empty();
 
@@ -333,7 +351,7 @@ public class Interpretor {
          for ( int i = 0; i < arguments.size(); ++i ) {
             total += ((Integer) arguments.get(i).getValue()).intValue();
          }
-         ret = new MyInt( total );
+         ret = new MyInteger( total );
          
       } else if ( canDoDouble) {
          double total = 0;
@@ -355,6 +373,13 @@ public class Interpretor {
          System.exit(-1);
       }
       
+      return ret;
+   }
+   
+      
+   private TypeAndValue currentPhrase(Vector<TypeAndValue> arguments, String caller) {
+      
+      MyInteger ret = new MyInteger( scoreHolder.getPhraseNumber() );
       return ret;
    }
 }
