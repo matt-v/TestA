@@ -37,6 +37,7 @@ public class Interpretor {
    private Interpretor() {
 
       // initialize our hash map with procedures
+      // Note: caller can be thought of as a 'hidden' argument associated with the ClientThread who called the procedure
 
       functionMap.put("addnote", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addNote(arguments, caller); }});
@@ -377,9 +378,8 @@ public class Interpretor {
       return ret;
    }
    
-      
+   // returns a MyInteger containing the phraseNumber from SocketHolder
    private TypeAndValue currentPhrase(Vector<TypeAndValue> arguments, String caller) {
-      
       MyInteger ret = new MyInteger( scoreHolder.getPhraseNumber() );
       return ret;
    }
