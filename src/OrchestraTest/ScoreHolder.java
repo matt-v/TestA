@@ -10,6 +10,7 @@ import jm.music.data.CPhrase;
 import jm.music.data.Part;
 import jm.music.data.Phrase;
 import jm.music.data.Score;
+import jm.music.data.Note;
 import jm.util.Play;
 
 
@@ -35,13 +36,25 @@ class ScoreHolder implements JMC {
    
    private Vector<ClearPhrase> futureClearPhrases; // future clearPhrase events
    
-   private Score score = new Score("Our Score", tempo);     // the score to play
+   private Score score = new Score("Our Score", tempo);              // the score to play
+   private Score emptyMessure = new Score( "Empty Messure", tempo);  // for when the score is empty
+   
    
    // private constuctor since we're using the singleton pattern
    private ScoreHolder() {
+      // initialize hashmaps and future events vector
       phraseMap = new HashMap();
       partMap   = new HashMap();
       futureClearPhrases = new Vector<ClearPhrase>();
+      
+      // set up empty messure
+      Part part = new Part();
+      part.addNote( new Note(REST, 1), 0);
+      emptyMessure.add(part);
+   }     
+   
+   public Score getEmptyMessure() {
+      return emptyMessure;
    }
    
    // adds one clientThread to the ensemble by adding a new part and phrase to their respective maps
@@ -88,11 +101,14 @@ class ScoreHolder implements JMC {
     * Plays score and increments phrase number
     */
    public void playScore() {
-      
       updatePhrase();
       Play.midi( score, false, true, 2 );
    }
    
+   public void playEmptyMessure() {
+      updatePhrase();
+      Play.midi( emptyMessure, false, true, 2 );
+   }
    
    /**
     * executesCurrentEvents and removes all timed out notes
@@ -149,6 +165,7 @@ class ScoreHolder implements JMC {
    public void setTempo( double newTempo ) {
       tempo = newTempo;
       score.setTempo( tempo );
+      emptyMessure.setTempo( tempo );
    }
    
    public boolean getPlayScore() {
