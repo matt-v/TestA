@@ -8,14 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import jm.music.data.*;
-
-import jm.music.data.Note;
+import jm.JMC;
 
 /**
  * Singleton interpretor, recursively calls itself until it evaluates to a TypeAndValue, see interp()
  * @author mattvaughan
  */
-public class Interpretor {
+public class Interpretor implements JMC {
 
    // singleton instance of the interpretor
    private static Interpretor SINGLETON_INSTANCE = new Interpretor();
@@ -41,6 +40,9 @@ public class Interpretor {
 
       functionMap.put("addnote", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addNote(arguments, caller); }});
+      
+      functionMap.put("addrest", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addRest(arguments, caller); }});
       
       functionMap.put("clearphrase", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return clearPhrase(arguments, caller); }});
@@ -175,7 +177,6 @@ public class Interpretor {
 
    /**
     * Calls the interpretor
-    *
     * @param procedureAndArguments a string with the procedure name and
     * arguments separated by a '#'
     * @param caller the name of the thread that called the interpretor
@@ -203,22 +204,28 @@ public class Interpretor {
     * *************************************************************************
     */
    private TypeAndValue addNote(Vector<TypeAndValue> arguments, String caller) {
-      System.out.println("addNotes() with args: " + arguments);
+      System.out.println("addNote() with args: " + arguments);
 
       // default values so netbeans wont yell at me, at the interpretor wont die if the procedure fails
       Integer noteNum = new Integer(0);
       Double noteLength = new Double(0);
 
+      
+      if ( arguments.size() != 2 ) {
+         System.err.println("addNote expected 2 arguments and got " + arguments.size() );
+         System.exit(-1);
+      }
+      
       if (arguments.get(0).getType().compareTo("Integer") == 0) {
          noteNum = (Integer) arguments.get(0).getValue();    // we know it's an Integer, cause we checked
       } else {
-         System.err.println("Type Mismatch in addNote! Expected Integer and got " + arguments.get(0).getType());
+         System.err.println("addNote expected Integer as first argument and got " + arguments.get(0).getType());
       }
 
       if (arguments.get(1).getType().compareTo("Double") == 0) {
          noteLength = (Double) arguments.get(1).getValue();    // we know it's an Integer, cause we checked
       } else {
-         System.err.println("Type Mismatch in addNote! Expected Double and got " + arguments.get(1).getType());
+         System.err.println("addNote expected Double as second argument and got " + arguments.get(1).getType());
       }
 
       Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
@@ -228,6 +235,31 @@ public class Interpretor {
       return new MyVoid();
    }
 
+   // adds a rest
+   private TypeAndValue addRest(Vector<TypeAndValue> arguments, String caller) {
+
+      // default value so netbeans wont yell at me, at the interpretor wont die if the procedure fails
+      Double restLength = new Double(0);
+
+      if (arguments.size() != 1) {
+         System.err.println("addRest expected one argument and got " + arguments.size());
+         System.exit(-1);
+      }
+
+      if (arguments.get(0).getType().compareTo("Double") == 0) {
+         restLength = (Double) arguments.get(0).getValue();    // we know it's a Double, cause we checked
+      } else {
+         System.err.println("Type Mismatch in addRest Expected Double and got " + arguments.get(0).getType());
+      }
+
+      Note myNote = new Note(REST, restLength.doubleValue());
+
+      scoreHolder.phraseMap.get(caller).addNote(myNote);
+
+      return new MyVoid();
+   }
+
+   
    private TypeAndValue clearPhrase(Vector<TypeAndValue> arguments, String caller) {
       System.out.println("clearPhrase() with args: " + arguments);
       
@@ -380,6 +412,7 @@ public class Interpretor {
    
    // returns a MyInteger containing the phraseNumber from SocketHolder
    private TypeAndValue currentPhrase(Vector<TypeAndValue> arguments, String caller) {
+      
       MyInteger ret = new MyInteger( scoreHolder.getPhraseNumber() );
       return ret;
    }
