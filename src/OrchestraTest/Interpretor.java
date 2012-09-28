@@ -58,6 +58,10 @@ public class Interpretor implements JMC {
       
       functionMap.put("currentphrase", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return currentPhrase(arguments, caller); }});
+      
+      functionMap.put("addfuturenote", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addFutureNote(arguments, caller); }});
+      
    }
 
    /**
@@ -275,6 +279,10 @@ public class Interpretor implements JMC {
          }
          else {
             int phraseToDieOn = ((Integer) arguments.get(0).getValue()).intValue();
+            
+            /*if ( scoreHolder.futureMap.get( caller ).endMeasureExist( phraseToDieOn ) ){
+                scoreHolder.futurePartMap.get( caller ).removeAllPhrases();
+            }*/
             scoreHolder.addClearPhrase(caller, phraseToDieOn);
          }
          
@@ -415,5 +423,52 @@ public class Interpretor implements JMC {
       
       MyInteger ret = new MyInteger( scoreHolder.getPhraseNumber() );
       return ret;
+   }
+   
+   private TypeAndValue addFutureNote(Vector<TypeAndValue> arguments, String caller) {
+       
+       System.out.println("addFutureNote() with args: " + arguments);
+
+      // default values so netbeans wont yell at me, at the interpretor wont die if the procedure fails
+      Integer noteNum    = new Integer(0);
+      Integer measureNum = new Integer(0);
+      Integer endNum     = new Integer(0);
+      Double noteLength  = new Double(0);
+
+      
+      if ( arguments.size() != 4 ) {
+         System.err.println("addFutureNote expected 4 arguments and got " + arguments.size() );
+         System.exit(-1);
+      }
+      
+      if (arguments.get(0).getType().compareTo("Integer") == 0) {
+         noteNum = (Integer) arguments.get(0).getValue();    // we know it's an Integer, cause we checked
+      } else {
+         System.err.println("addFutureNote expected Integer as first argument and got " + arguments.get(0).getType());
+      }
+
+      if (arguments.get(1).getType().compareTo("Double") == 0) {
+         noteLength = (Double) arguments.get(1).getValue();    // we know it's an Integer, cause we checked
+      } else {
+         System.err.println("addFutureNote expected Double as second argument and got " + arguments.get(1).getType());
+      }
+      
+      if (arguments.get(2).getType().compareTo("Integer") == 0) {
+          measureNum = (Integer) arguments.get(2).getValue();  // we know it's an Integer, cause we checked
+      } else {
+          System.err.println("addFutureNote expected Integer as third argument and got" + arguments.get(2).getType());
+      }
+      
+      if (arguments.get(3).getType().compareTo("Integer") == 0) {
+          endNum = (Integer) arguments.get(3).getValue();  // we know it's an Integer, cause we checked
+      } else {
+          System.err.println("addFutureNote expected Integer as fourth argument and got" + arguments.get(3).getType());
+      }
+
+      Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
+      
+      //scoreHolder.futureMap.get(caller).addFutureNote(myNote, scoreHolder.getPhraseNumber()+measureNum, scoreHolder.getPhraseNumber()+endNum);
+
+      return new MyVoid();
    }
 }

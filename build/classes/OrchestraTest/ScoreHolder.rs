@@ -1,3 +1,0 @@
-OrchestraTest.ScoreEvent
-OrchestraTest.FutureEvents
-OrchestraTest.ScoreHolder

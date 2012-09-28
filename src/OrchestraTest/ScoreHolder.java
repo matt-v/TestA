@@ -33,6 +33,8 @@ class ScoreHolder implements JMC {
       
    public Map<String,Phrase> phraseMap;            // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
    public Map<String,Part> partMap;                // Maps user clientThreads to Parts     + KEYS SHOULD MATCH
+   //public Map<String,Part> futurePartMap;          // Maps user clientThreads to future Parts
+   //public Map<String,FuturePhrase> futureMap;      // Maps user clientThreads to FuturePhrases
    
    private Vector<ClearPhrase> futureClearPhrases; // future clearPhrase events
    
@@ -43,8 +45,10 @@ class ScoreHolder implements JMC {
    // private constuctor since we're using the singleton pattern
    private ScoreHolder() {
       // initialize hashmaps and future events vector
-      phraseMap = new HashMap();
-      partMap   = new HashMap();
+      phraseMap     = new HashMap();
+      partMap       = new HashMap();
+      //futureMap     = new HashMap();
+      //futurePartMap = new HashMap();
       futureClearPhrases = new Vector<ClearPhrase>();
       
       // set up empty messure
@@ -60,11 +64,15 @@ class ScoreHolder implements JMC {
    // adds one clientThread to the ensemble by adding a new part and phrase to their respective maps
    public void addPersonToEnsemble( String id ) {
       
-      Phrase newPhrase = new Phrase(0.0);                // phrase whose start time is 0.0
-      Part newPart = new Part( id, PIANO, channel++ );   // part whose default instrument is PIANO
+      Phrase newPhrase = new Phrase(0.0);                    // phrase whose start time is 0.0
+      Part newPart = new Part( id, PIANO, channel++ );       // part whose default instrument is PIANO
+      //Part newFuturePart = new Part( id, PIANO, channel++ ); // part whose default instrument is PIANO
+      //FuturePhrase newFuturePhrase = new FuturePhrase();     // new FuturePhrase class for client
       
       phraseMap.put(id, newPhrase );
       partMap.put(id, newPart );
+      //futurePartMap.put(id, newFuturePart );
+      //futureMap.put(id, newFuturePhrase );
    }
    
    /**
@@ -77,6 +85,7 @@ class ScoreHolder implements JMC {
    
    // empty and re-assembles the score before Play.midi() is called
    public void assemble() {
+      //Phrase tempPhrase;                                                      // temp phrase to check for future phrases
       
       score.removeAllParts();
       
@@ -89,9 +98,16 @@ class ScoreHolder implements JMC {
          if ( phraseMap.get( keys[i] ).length() != 0 ) {
                  
             if ( phraseMap.get( keys[i] ).length() != 0 ) {
+
+                /* Checks to see if there is a part queued up in the futureMap
+                if ( (tempPhrase = futureMap.get( keys[i] ).getFuturePhrase( phraseNumber )) != null ) {
+                    futurePartMap.get( keys[i] ).addPhrase( tempPhrase );
+                }*/
+                
                 partMap.get( keys[i] ).addPhrase( phraseMap.get( keys[i] ) ); // add phrase to the part
             }
             
+            //score.addPart( futurePartMap.get( keys[i] ) );                    // and add the future part to the score
             score.addPart( partMap.get( keys[i] ) );                          // and add the part to the score
          }
       }
