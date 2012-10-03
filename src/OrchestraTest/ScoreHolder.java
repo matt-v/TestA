@@ -33,10 +33,10 @@ class ScoreHolder implements JMC {
       
    public Map<String,Phrase> phraseMap;            // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
    public Map<String,Part> partMap;                // Maps user clientThreads to Parts     + KEYS SHOULD MATCH
-   //public Map<String,Part> futurePartMap;          // Maps user clientThreads to future Parts
-   //public Map<String,FuturePhrase> futureMap;      // Maps user clientThreads to FuturePhrases
    
+   /***** NOTE:  We should consolidate fututeClearPhrases and futureEvents... or just remove fcp ******/
    private Vector<ClearPhrase> futureClearPhrases; // future clearPhrase events
+   private Vector<FutureEvent> futureEvents; // future clearPhrase events
    
    private Score score = new Score("Our Score", tempo);              // the score to play
    private Score emptyMessure = new Score( "Empty Messure", tempo);  // for when the score is empty
@@ -47,8 +47,7 @@ class ScoreHolder implements JMC {
       // initialize hashmaps and future events vector
       phraseMap     = new HashMap();
       partMap       = new HashMap();
-      //futureMap     = new HashMap();
-      //futurePartMap = new HashMap();
+      futureEvents = new Vector<FutureEvent>();
       futureClearPhrases = new Vector<ClearPhrase>();
       
       // set up empty messure
@@ -131,10 +130,34 @@ class ScoreHolder implements JMC {
     */
    public void updatePhrase() {
       
+      execFutureEvents();
       clearPhrases();
       phraseNumber++;         // increment phrase number
    }
    
+   /**
+    * Executes futureEvents
+    */
+   private void execFutureEvents() {
+      
+      for ( int i = 0; i < futureEvents.size(); ++i ) {
+         
+         if ( futureEvents.get(i).getPhraseNum() == phraseNumber ) {
+            futureEvents.get(i).execute();
+         }
+      }
+   }
+   
+   /**
+    * 
+    * @param command the command to execute
+    * @param caller the name of the calling thread
+    * @param phraseToDie the phrase number on which to execute the command
+    */
+   public void addFutureEvent( String command, String caller, int phraseToExec ) {
+      FutureEvent futureEvent = new FutureEvent( command, caller, phraseToExec );
+      futureEvents.add(futureEvent);
+   }
    /**
     * Stops phrases from looping forever...
     */
@@ -147,7 +170,7 @@ class ScoreHolder implements JMC {
          if ( futureClearPhrases.get(i).getPhraseNum() == phraseNumber ) {
             
             String caller = futureClearPhrases.get(i).getCaller();
-            Interpretor.getInstance().interp("!@clearphrase()", caller );
+            Interpreter.getInstance().interp("!@clearphrase()", caller );
          }
       }
    }

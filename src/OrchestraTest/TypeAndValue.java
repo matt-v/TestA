@@ -54,7 +54,7 @@ class MyString extends TypeAndValue {
    
    public MyString( String value ) {
       this.type = "String";
-      this.value = value;
+      this.value = value.substring(1, value.length()-1);
    }
    
    public String getValue() {

@@ -14,10 +14,10 @@ import jm.JMC;
  * Singleton interpretor, recursively calls itself until it evaluates to a TypeAndValue, see interp()
  * @author mattvaughan
  */
-public class Interpretor implements JMC {
+public class Interpreter implements JMC {
 
    // singleton instance of the interpretor
-   private static Interpretor SINGLETON_INSTANCE = new Interpretor();
+   private static Interpreter SINGLETON_INSTANCE = new Interpreter();
    
    // we should hold on to the ScoreHolder locally...
    ScoreHolder scoreHolder = ScoreHolder.getInstance();
@@ -33,7 +33,7 @@ public class Interpretor implements JMC {
    /**
     * Private constructor... there should only be one interpretor
     */
-   private Interpretor() {
+   private Interpreter() {
 
       // initialize our hash map with procedures
       // Note: caller can be thought of as a 'hidden' argument associated with the ClientThread who called the procedure
@@ -59,8 +59,8 @@ public class Interpretor implements JMC {
       functionMap.put("currentphrase", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return currentPhrase(arguments, caller); }});
       
-      functionMap.put("addfuturenote", new Command() {
-         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addFutureNote(arguments, caller); }});
+      functionMap.put("queue", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addToQueue(arguments, caller); }});
       
    }
 
@@ -68,7 +68,7 @@ public class Interpretor implements JMC {
     * Get the singleton instance of the interpretor
     * @return the interpretor
     */
-   public static Interpretor getInstance() {
+   public static Interpreter getInstance() {
       return SINGLETON_INSTANCE;
    }
 
@@ -140,12 +140,30 @@ public class Interpretor implements JMC {
 
             // if this is one of multiple arguments
             if (arguments.contains(",")) {
-               int endIndex = arguments.indexOf(",");
+               
+               int endIndex = 0;
+               
+               if ( arguments.startsWith("'") ) {
+                  System.err.println("STARTS WITH QUOTE");
+                  int endQuote = arguments.indexOf("'", 1);
+                  System.err.println("END QUOTE AT " +endQuote);
+                  if ( arguments.charAt(endQuote+1 ) == ',' ) {
+                     endIndex = endQuote+1;
+                     System.err.println("COMMA AT "+endIndex);
+                  }
+                  else {
+                     endIndex = endQuote;
+                  }
+               }
+               else {
+                  endIndex = arguments.indexOf(",");   
+               }
+                  
                currentArgument = arguments.substring(0, endIndex);
-
-               // remove this argument from arguments
                arguments = arguments.substring(endIndex + 1);
-               System.out.println(" --- " + arguments);
+     
+               System.out.println(currentArgument);
+               System.err.println(" --- " + arguments);
             } // if this is a lone argument
             else {
                currentArgument = arguments;
@@ -155,7 +173,7 @@ public class Interpretor implements JMC {
             }
 
             // what's the type?
-            // integer
+              // integer
             if (currentArgument.matches("\\d+")) {
                int value = new Integer(currentArgument).intValue();
                argumentVector.add(new MyInteger(value));
@@ -164,8 +182,13 @@ public class Interpretor implements JMC {
                double value = new Double(currentArgument).doubleValue();
                argumentVector.add(new MyDouble(value));
             } // string
-            else {
+            else if ( currentArgument.startsWith("'") && currentArgument.endsWith("'") ) {
                argumentVector.add(new MyString(currentArgument));
+            }
+               // type unknown
+            else {
+               System.err.println("Type of " + currentArgument + " unknown!");
+               System.exit(-1);
             }
          }
       }
@@ -208,8 +231,7 @@ public class Interpretor implements JMC {
     * *************************************************************************
     */
    private TypeAndValue addNote(Vector<TypeAndValue> arguments, String caller) {
-      System.out.println("addNote() with args: " + arguments);
-
+      
       // default values so netbeans wont yell at me, at the interpretor wont die if the procedure fails
       Integer noteNum = new Integer(0);
       Double noteLength = new Double(0);
@@ -265,7 +287,6 @@ public class Interpretor implements JMC {
 
    
    private TypeAndValue clearPhrase(Vector<TypeAndValue> arguments, String caller) {
-      System.out.println("clearPhrase() with args: " + arguments);
       
       if ( arguments.size() > 1) {
          System.err.println("ClearPhrase expected one or no arguments and got " + arguments.size() );
@@ -319,37 +340,42 @@ public class Interpretor implements JMC {
    }
 
    private TypeAndValue addChord(Vector<TypeAndValue> arguments, String caller) {
-      System.out.println("addChord() with args: " + arguments);
+      
+      System.err.println("********** GOT THE THE BEGINIG OF addChord **************");
 
-      if (arguments.size() < 4) {
-         System.err.println("addChord expected 4 arguments and got " + arguments.size());
+      if (arguments.size() < 2) {
+         System.err.println("addChord expected two or more arguments and got " + arguments.size());
          System.exit(-1);
       }
 
-      // default values to keep netbeans from yelling and the interpretor from dieing if procedure fails
-      int noteNum1 = 0, noteNum2 = 0, noteNum3 = 0;
+      Vector<Integer> notes = new Vector<Integer>();
+      
+      // default value to keep netbeans from yelling and the interpretor from dieing if procedure fails      
       double noteLength = 0;
       
-      // check the type and if correct type get the value
-      if (arguments.get(0).getType().compareTo("Integer") == 0) {
-         noteNum1 = ((Integer) arguments.get(0).getValue()).intValue();
+      // get each of the notes
+      for ( int i = 0; i < (arguments.size()-1); ++i ) {
+         // check the type and if correct type get the value
+         if (arguments.get(i).getType().compareTo("Integer") == 0) {
+            notes.add( ((Integer) arguments.get(i).getValue()) );
+         }
+         System.err.println("**** " + i + " ****");
       }
-      // check the type and if correct type get the value
-      if (arguments.get(1).getType().compareTo("Integer") == 0) {
-         noteNum2 = ((Integer) arguments.get(1).getValue()).intValue();
-      }
-      // check the type and if correct type get the value
-      if (arguments.get(2).getType().compareTo("Integer") == 0) {
-         noteNum3 = ((Integer) arguments.get(2).getValue()).intValue();
-      }
-      // check the type and if correct type get the value
-      if (arguments.get(3).getType().compareTo("Double") == 0) {
-         noteLength = ((Double) arguments.get(3).getValue()).doubleValue();
+      
+      // get the note length
+      if (arguments.get( arguments.size()-1 ).getType().compareTo("Double") == 0) {
+         noteLength = ((Double) arguments.get( arguments.size()-1 ).getValue()).doubleValue();
       }
 
+      Integer[] temp = new Integer[notes.size()];
+      temp = notes.toArray(temp);
+      int[] notePitches = new int[temp.length];
+            
+      for ( int i = 0; i < temp.length; ++i ) {
+         notePitches[i] = temp[i].intValue();
+      }
 
-      int[] notePitches = {noteNum1, noteNum2, noteNum3};
-
+      System.err.println("got to the end of addchord ****************");
       scoreHolder.phraseMap.get(caller).addChord(notePitches, noteLength);
 
       return new MyVoid();
@@ -425,50 +451,35 @@ public class Interpretor implements JMC {
       return ret;
    }
    
-   private TypeAndValue addFutureNote(Vector<TypeAndValue> arguments, String caller) {
+   private TypeAndValue addToQueue(Vector<TypeAndValue> arguments, String caller) {
        
-       System.out.println("addFutureNote() with args: " + arguments);
-
-      // default values so netbeans wont yell at me, at the interpretor wont die if the procedure fails
-      Integer noteNum    = new Integer(0);
-      Integer measureNum = new Integer(0);
-      Integer endNum     = new Integer(0);
-      Double noteLength  = new Double(0);
-
-      
-      if ( arguments.size() != 4 ) {
-         System.err.println("addFutureNote expected 4 arguments and got " + arguments.size() );
+      if ( arguments.size() != 2 ) {
+         System.err.println("Queue() expected 2 arguments and got " + arguments.size() );
          System.exit(-1);
       }
       
-      if (arguments.get(0).getType().compareTo("Integer") == 0) {
-         noteNum = (Integer) arguments.get(0).getValue();    // we know it's an Integer, cause we checked
+      String command = "";
+      int phraseNumber = 0;
+      
+      // if first argument isn't a MyString
+      if ( arguments.get(0).getType().compareTo("String") != 0 ) {
+         System.err.println("Queues() expected first argument to be a String and got " + arguments.get(0).getType() );
+         System.exit(-1);
       } else {
-         System.err.println("addFutureNote expected Integer as first argument and got " + arguments.get(0).getType());
-      }
-
-      if (arguments.get(1).getType().compareTo("Double") == 0) {
-         noteLength = (Double) arguments.get(1).getValue();    // we know it's an Integer, cause we checked
-      } else {
-         System.err.println("addFutureNote expected Double as second argument and got " + arguments.get(1).getType());
+          command = (String) arguments.get(0).getValue();  // we know the type, because we checked 
       }
       
-      if (arguments.get(2).getType().compareTo("Integer") == 0) {
-          measureNum = (Integer) arguments.get(2).getValue();  // we know it's an Integer, cause we checked
+      // if second argument isn't an MyInteger
+      if ( arguments.get(1).getType().compareTo("Integer") != 0 ) {
+         System.err.println("Queues() expected second argument to be an Integer and got " + arguments.get(1).getType() );
+         System.exit(-1);
       } else {
-          System.err.println("addFutureNote expected Integer as third argument and got" + arguments.get(2).getType());
+         phraseNumber = ((Integer) arguments.get(1).getValue()).intValue(); // we know the type, because we checked 
       }
       
-      if (arguments.get(3).getType().compareTo("Integer") == 0) {
-          endNum = (Integer) arguments.get(3).getValue();  // we know it's an Integer, cause we checked
-      } else {
-          System.err.println("addFutureNote expected Integer as fourth argument and got" + arguments.get(3).getType());
-      }
+      scoreHolder.addFutureEvent( command, caller, phraseNumber);
 
-      Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
       
-      //scoreHolder.futureMap.get(caller).addFutureNote(myNote, scoreHolder.getPhraseNumber()+measureNum, scoreHolder.getPhraseNumber()+endNum);
-
       return new MyVoid();
    }
 }
