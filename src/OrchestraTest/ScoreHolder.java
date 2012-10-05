@@ -25,7 +25,7 @@ class ScoreHolder implements JMC {
    private static ScoreHolder SINGLE_INSTANCE = new ScoreHolder();
    
    private int channel = 0;                        // the next channel to use   
-   private int phraseNumber = 0;                  // the current phrase number
+   private int phraseNumber = 0;                   // the current phrase number
                                                    //    to be incremented first time through the loop
    private boolean playScore = true;               // should we play the song
    private double tempo = 120.0;                   // song tempo   
@@ -36,7 +36,7 @@ class ScoreHolder implements JMC {
    
    /***** NOTE:  We should consolidate fututeClearPhrases and futureEvents... or just remove fcp ******/
    private Vector<ClearPhrase> futureClearPhrases; // future clearPhrase events
-   private Vector<FutureEvent> futureEvents; // future clearPhrase events
+   private Vector<FutureEvent> futureEvents;       // future clearPhrase events
    
    private Score score = new Score("Our Score", tempo);              // the score to play
    private Score emptyMessure = new Score( "Empty Messure", tempo);  // for when the score is empty
