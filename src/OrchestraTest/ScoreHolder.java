@@ -141,15 +141,15 @@ class ScoreHolder implements JMC {
    private void execFutureEvents() {
       
       for ( int i = 0; i < futureEvents.size(); ++i ) {
-         
          if ( futureEvents.get(i).getPhraseNum() == phraseNumber ) {
             futureEvents.get(i).execute();
+            futureEvents.remove(i);
          }
       }
    }
    
    /**
-    * 
+    * Queue up an event
     * @param command the command to execute
     * @param caller the name of the calling thread
     * @param phraseToDie the phrase number on which to execute the command
@@ -158,6 +158,7 @@ class ScoreHolder implements JMC {
       FutureEvent futureEvent = new FutureEvent( command, caller, phraseToExec );
       futureEvents.add(futureEvent);
    }
+   
    /**
     * Stops phrases from looping forever...
     */
@@ -200,20 +201,33 @@ class ScoreHolder implements JMC {
    public double getEndTime() {
       return score.getEndTime();
    }
-      
+   
+   /**
+    * Sets the tempo of the score and empty messure
+    * @param newTempo the new tempo
+    */
    public void setTempo( double newTempo ) {
       tempo = newTempo;
       score.setTempo( tempo );
       emptyMessure.setTempo( tempo );
    }
    
+   /**
+    * Returns playScore which tells us whether or not we should play the score
+    * @return Whether or not we should play the score
+    */
    public boolean getPlayScore() {
       return playScore;
    }
    
+   /**
+    * Sets the value of playScore which tells us if we should play the score next time through the main midi loop
+    * @param newPlayScore 
+    */
    public void setPlayScore( boolean newPlayScore ) {
       playScore = newPlayScore;
    }
+   
    
    public void setQuit( boolean newQuit ) {
       quit = newQuit;
