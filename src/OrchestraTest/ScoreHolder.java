@@ -52,7 +52,7 @@ class ScoreHolder implements JMC {
       
       // set up empty messure
       Part part = new Part();
-      part.addNote( new Note(REST, 1), 0);
+      part.addNote( new Note(REST, WN), 0);
       emptyMessure.add(part);
    }     
    
@@ -144,6 +144,7 @@ class ScoreHolder implements JMC {
          if ( futureEvents.get(i).getPhraseNum() == phraseNumber ) {
             futureEvents.get(i).execute();
             futureEvents.remove(i);
+            --i;
          }
       }
    }

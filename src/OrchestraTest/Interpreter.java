@@ -7,8 +7,8 @@ package OrchestraTest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-import jm.music.data.*;
 import jm.JMC;
+import jm.music.data.Note;
 
 /**
  * Singleton interpretor, recursively calls itself until it evaluates to a TypeAndValue, see interp()
