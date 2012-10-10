@@ -52,7 +52,7 @@ class ClientThread implements Runnable, JMC {
          while( live ) {
             
             // get input from Scratch
-            char [] cStr = new char[255];                               // buffer size of 255 seems reasonable...
+            char [] cStr = new char[4096];                               // buffer size of 255 seems reasonable...
             in.read(cStr);
             String currentLine = new String( cStr );
             

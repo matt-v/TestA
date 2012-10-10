@@ -34,20 +34,21 @@ public class SocketListenerThread implements Runnable {
    public void run() {
       
       Socket clientSocket = null;
-      
-      // Step 1 - Acception connection from a client
-      try {
-         clientSocket = serverSocket.accept();     // wait for a client to connect
-      } catch ( Exception e ) {
-         System.err.println( "Problem accepting connection on port 42001: SocketListenerThread.run()" );
-         // Exiting here would be an over reaction... the thread should be able to deal with a failed connection
-         // gracefully without needing to be reset.
+      while( true ) {
+         // Step 1 - Acception connection from a client
+         try {
+            clientSocket = serverSocket.accept();     // wait for a client to connect
+         } catch (Exception e) {
+            System.err.println("Problem accepting connection on port 42001: SocketListenerThread.run()");
+            // Exiting here would be an over reaction... the thread should be able to deal with a failed connection
+            // gracefully without needing to be reset.
+         }
+
+         // Step 2 - Create a thread for the new connection
+         if (clientSocket != null) {
+            System.err.println("Connect made to " + clientSocket.toString());
+            new ClientThread(clientSocket);
+         }
       }
-      
-      // Step 2 - Create a thread for the new connection
-      if ( clientSocket != null ) {
-         new ClientThread(clientSocket);
-      }
-      
    }
 }
