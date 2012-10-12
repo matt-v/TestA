@@ -254,10 +254,15 @@ public class Interpreter implements JMC {
          System.err.println("addNote expected Double as second argument and got " + arguments.get(1).getType());
       }
 
-      Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
+      if ( (noteLength + scoreHolder.phraseMap.get(caller).getBeatLength()) <= 4.001 ) {
+        Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
 
-      scoreHolder.phraseMap.get(caller).addNote(myNote);
-
+        scoreHolder.phraseMap.get(caller).addNote(myNote);
+      }
+      else {
+        //scoreHolder.addFutureEvent( "@addnote(" + noteNum + "," + noteLength + ")", caller, scoreHolder.getPhraseNumber()+1 );
+      }
+      
       return new MyVoid();
    }
 

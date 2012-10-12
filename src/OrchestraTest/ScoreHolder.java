@@ -85,7 +85,8 @@ class ScoreHolder implements JMC {
    // empty and re-assembles the score before Play.midi() is called
    public void assemble() {
       //Phrase tempPhrase;                                                      // temp phrase to check for future phrases
-      
+      double restFiller = 0.0;
+       
       score.removeAllParts();
       
       String[] keys = phraseMap.keySet().toArray( new String[0]);
@@ -102,6 +103,10 @@ class ScoreHolder implements JMC {
                 if ( (tempPhrase = futureMap.get( keys[i] ).getFuturePhrase( phraseNumber )) != null ) {
                     futurePartMap.get( keys[i] ).addPhrase( tempPhrase );
                 }*/
+                
+                if ( (restFiller = 4.00 - phraseMap.get( keys[i] ).getBeatLength()) > 0.0 ) {
+                    phraseMap.get( keys[i] ).addNote(REST, restFiller);
+                }
                 
                 partMap.get( keys[i] ).addPhrase( phraseMap.get( keys[i] ) ); // add phrase to the part
             }
