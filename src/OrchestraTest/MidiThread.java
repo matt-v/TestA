@@ -34,6 +34,7 @@ class MidiThread implements Runnable {
             }
             else {
                scoreHolder.playEmptyMessure();
+               System.out.println("DEBUG--Play Music--Phrase # " + scoreHolder.getPhraseNumber() );
             }
             
          } // end while

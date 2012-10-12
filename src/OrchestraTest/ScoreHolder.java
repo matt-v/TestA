@@ -39,8 +39,8 @@ class ScoreHolder implements JMC {
    private Vector<FutureEvent> futureEvents;       // future clearPhrase events
    
    private Score score = new Score("Our Score", tempo);              // the score to play
-   private Score emptyMessure = new Score( "Empty Messure", tempo);  // for when the score is empty
-   
+   private Score emptyMessure = new Score( "Empty Messure", tempo);  // for when the score is empt
+   private Part emptyPart = new Part();
    
    // private constuctor since we're using the singleton pattern
    private ScoreHolder() {
@@ -51,9 +51,8 @@ class ScoreHolder implements JMC {
       futureClearPhrases = new Vector<ClearPhrase>();
       
       // set up empty messure
-      Part part = new Part();
-      part.addNote( new Note(REST, WN), 0);
-      emptyMessure.add(part);
+      emptyPart.addNote( new Note(REST, WN), 0);
+      emptyMessure.add(emptyPart);
    }     
    
    public Score getEmptyMessure() {
@@ -104,10 +103,6 @@ class ScoreHolder implements JMC {
                     futurePartMap.get( keys[i] ).addPhrase( tempPhrase );
                 }*/
                 
-                if ( (restFiller = 4.00 - phraseMap.get( keys[i] ).getBeatLength()) > 0.0 ) {
-                    phraseMap.get( keys[i] ).addNote(REST, restFiller);
-                }
-                
                 partMap.get( keys[i] ).addPhrase( phraseMap.get( keys[i] ) ); // add phrase to the part
             }
             
@@ -115,6 +110,7 @@ class ScoreHolder implements JMC {
             score.addPart( partMap.get( keys[i] ) );                          // and add the part to the score
          }
       }
+      score.addPart( emptyPart );
    }
    
    /**
