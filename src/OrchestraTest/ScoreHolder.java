@@ -27,6 +27,9 @@ class ScoreHolder implements JMC {
    private int channel = 0;                        // the next channel to use   
    private int phraseNumber = 0;                   // the current phrase number
                                                    //    to be incremented first time through the loop
+   //private double newMeasureLength = 4.0;               // the newest measure length of the score
+   //private double curMeasureLength = 4.0;               // the current measure length of the score
+   
    private boolean playScore = true;               // should we play the song
    private double tempo = 120.0;                   // song tempo   
    private boolean quit = false;                   // should we end the midi thread?
@@ -239,6 +242,19 @@ class ScoreHolder implements JMC {
    public boolean getQuit() {
       return quit;
    }
+   
+   /*public double getMeasureLength() {
+       return curMeasureLength;
+   }
+   
+   public void setNewMeasureLength( double measure ) {
+       newMeasureLength = measure;
+   }
+   
+   public void updateMeasureLength() {
+       if ( curMeasureLength != newMeasureLength )
+           curMeasureLength = newMeasureLength;
+   }*/
 }
 
 
