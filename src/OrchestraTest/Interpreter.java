@@ -235,7 +235,7 @@ public class Interpreter implements JMC {
       // default values so netbeans wont yell at me, at the interpretor wont die if the procedure fails
       Integer noteNum = new Integer(0);
       Double noteLength = new Double(0);
-
+      // String noteLengthStr = new String("");
       
       if ( arguments.size() != 2 ) {
          System.err.println("addNote expected 2 arguments and got " + arguments.size() );
@@ -253,6 +253,32 @@ public class Interpreter implements JMC {
       } else {
          System.err.println("addNote expected Double as second argument and got " + arguments.get(1).getType());
       }
+      
+      /* Constant code to be implemented; not sure how to deal with its placement for now Brendan 10/18/2012
+       *
+      if (arguments.get(0).getType().compareTo("String") == 0) {
+         noteLengthStr = (String) arguments.get(0).getValue();    // we know it's an Integer, cause we checked
+      } else {
+        System.err.println("addNote expected String as second argument and got " + arguments.get(0).getType());
+      }
+    
+      if ( noteLengthStr.equals("en") ) {
+         noteLength = EN;  
+      } else if ( noteLengthStr.equals("qn") ) {
+         noteLength = QN;
+      } else if ( noteLengthStr.equals("hn") ) {
+         noteLength = HN;
+      } else if ( noteLengthStr.equals("wn") ) {
+         noteLength = WN;
+      } else {
+         System.err.println("didn't figure out note length");
+         noteLength = 0.5;
+      }
+      
+      Note myNote = new Note(noteNum.intValue(), noteLength.doubleValue());
+
+      scoreHolder.phraseMap.get(caller).addNote(myNote);
+       */
 // I commented this stuff out for the time being so the phrase is still dynamic
 // Matthew Vaughan Oct/12/2012
 //      if ( (noteLength + scoreHolder.phraseMap.get(caller).getBeatLength()) <= 4.001 ) {
