@@ -137,6 +137,7 @@ class ScoreHolder implements JMC {
       execFutureEvents();
       clearPhrases();
       phraseNumber++;         // increment phrase number
+      //updateMeasureLength(); // updates the measure length starting from next measure
    }
    
    /**
