@@ -62,6 +62,8 @@ public class Interpreter implements JMC {
       functionMap.put("queue", new Command() {
          public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return addToQueue(arguments, caller); }});
       
+      /*functionMap.put("setMeasureLength", new Command() {
+         public TypeAndValue invoke(Vector<TypeAndValue> arguments, String caller) { return setMeasureLength(arguments, caller); }});*/
    }
 
    /**
@@ -370,6 +372,30 @@ public class Interpreter implements JMC {
 
       return new MyVoid();
    }
+
+   /*private TypeAndValue setMeasureLength(Vector<TypeAndValue> arguments, String caller) {
+      System.out.println("setMeasureLength() with args: " + arguments);
+
+      // set it to zero so java my IDE doesn't yell at me
+      int measureLength = 0;
+
+      if (arguments.size() < 1) {
+         System.err.println("setMeasureLength expected one argument got zero!");
+         System.exit(-1);
+      }
+
+      // check the type and if correct type get the value
+      if (arguments.get(0).getType().compareTo("Integer") == 0) {
+         measureLength = ((Integer) arguments.get(0).getValue()).intValue();
+      } else {
+         System.err.println("setMeasureLength expected an Integer but got a " + arguments.get(0).getType() );
+      }
+      
+      // finally, change the measure length and return a MyVoid to the interpretor
+      scoreHolder.getInstance().setNewMeasureLength( (double) measureLength );
+
+      return new MyVoid();
+   }*/
 
    private TypeAndValue addChord(Vector<TypeAndValue> arguments, String caller) {
       
