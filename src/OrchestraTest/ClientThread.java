@@ -49,12 +49,17 @@ class ClientThread implements Runnable, JMC {
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream() ) );
 
          // while the thread is suppose to be running
-         while( live ) {
+         while( ! scoreHolder.getQuit() ) {
             
             // get input from Scratch
             char [] cStr = new char[4096];                               // buffer size of 255 seems reasonable...
             in.read(cStr);
             String currentLine = new String( cStr );
+            
+            // Checks if the connection is closed to the client
+            if (currentLine.contains("ClosingClientConnection")) {
+                break;
+            }
             
             // if more than one command slip come through at a time
             String [] commands = currentLine.split( "!" );
@@ -72,5 +77,8 @@ class ClientThread implements Runnable, JMC {
       }
       
       System.out.println( "Exiting " + t.getName() + "." );             // for debugging
+      
+      // Removes disconnected client from the list
+      scoreHolder.removeClient( t.getName() );
    }
 }

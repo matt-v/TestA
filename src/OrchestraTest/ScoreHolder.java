@@ -24,6 +24,9 @@ class ScoreHolder implements JMC {
    // stores the only instance of ScoreHolder
    private static ScoreHolder SINGLE_INSTANCE = new ScoreHolder();
    
+   private javax.swing.JTextPane measureDisplay = null;   // Display for current measure
+   private javax.swing.JTextArea clientDisplay  = null;   // Display for clients currently connected
+   
    private int channel = 0;                        // the next channel to use   
    private int phraseNumber = 0;                   // the current phrase number
                                                    //    to be incremented first time through the loop
@@ -32,7 +35,7 @@ class ScoreHolder implements JMC {
    
    private boolean playScore = true;               // should we play the song
    private double tempo = 120.0;                   // song tempo   
-   private boolean quit = false;                   // should we end the midi thread?
+   private boolean quit = true;                   // should we end the midi thread?
       
    public Map<String,Phrase> phraseMap;            // Maps user clientThreads to Phrases   + KEYS SHOULD MATCH
    public Map<String,Part> partMap;                // Maps user clientThreads to Parts     + KEYS SHOULD MATCH
@@ -74,6 +77,11 @@ class ScoreHolder implements JMC {
       partMap.put(id, newPart );
       //futurePartMap.put(id, newFuturePart );
       //futureMap.put(id, newFuturePhrase );
+      
+      // Adds client name to the client list display
+      if ( clientDisplay != null ) {
+          updateClientDisplay(id);
+      }
    }
    
    /**
@@ -138,6 +146,11 @@ class ScoreHolder implements JMC {
       clearPhrases();
       phraseNumber++;         // increment phrase number
       //updateMeasureLength(); // updates the measure length starting from next measure
+      
+      // Displays the current measure onto the display area
+      if ( measureDisplay != null ) {
+          measureDisplay.setText(""+phraseNumber+"");
+      }
    }
    
    /**
@@ -234,9 +247,14 @@ class ScoreHolder implements JMC {
       playScore = newPlayScore;
    }
    
-   
+   // Sets the quit flag to stop the Score and resets the current measure
    public void setQuit( boolean newQuit ) {
       quit = newQuit;
+      phraseNumber = 0;
+      
+      if ( measureDisplay != null ) {
+          measureDisplay.setText(""+phraseNumber+"");
+      }
    }
    
    // used in midi thread to determine when to quit the while loop
@@ -256,6 +274,30 @@ class ScoreHolder implements JMC {
        if ( curMeasureLength != newMeasureLength )
            curMeasureLength = newMeasureLength;
    }*/
+   
+   // Initializes the display areas so the ScoreHolder can update them
+   public void setDisplays( javax.swing.JTextPane jTextPane, javax.swing.JTextArea jTextArea ) {
+       measureDisplay = jTextPane;
+       clientDisplay  = jTextArea;
+   }
+   
+   // Adds newly connected clients to the client list display
+   private void updateClientDisplay( String id ) {
+       clientDisplay.append(id+"\n");
+   }
+   
+   // Removes client from the client list display
+   public void removeClient( String id ) {
+       String replacement = clientDisplay.getText();
+       
+       // Checks to see if the client thread id is posted on the list
+       if ( replacement.contains(id) ) {
+           // Cuts out the part of the string containing the id
+           replacement = replacement.replace(id+"\n", "");
+           
+           clientDisplay.setText( replacement );
+       }
+   }
 }
 
 
