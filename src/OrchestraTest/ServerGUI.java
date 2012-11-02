@@ -13,6 +13,7 @@ public class ServerGUI extends javax.swing.JFrame {
     private boolean started = false;
     private ScoreHolder scoreHolder = ScoreHolder.getInstance();
     private SocketListenerThread serverSocket;
+    private MidiThread midithread = null;
     
     /**
      * Creates new form ServerGUI
@@ -151,6 +152,8 @@ public class ServerGUI extends javax.swing.JFrame {
         if ( started ) {
             scoreHolder.setQuit(true);
             
+            midithread.close();
+            
             started = false;
             
             //System.exit(0);
@@ -162,7 +165,7 @@ public class ServerGUI extends javax.swing.JFrame {
         if ( ! started ) {
             scoreHolder.setQuit(false);
             
-            new MidiThread();
+            midithread = new MidiThread();
 
             started = true;
         }      

@@ -11,6 +11,7 @@ package OrchestraTest;
 class MidiThread implements Runnable {
    
    Thread t;
+   boolean open = true;
    private ScoreHolder scoreHolder = ScoreHolder.getInstance();
    
    MidiThread() {
@@ -19,9 +20,13 @@ class MidiThread implements Runnable {
       t.start();
    }
    
+   public void close() {
+       open = false;
+   }
+   
    public void run() {
       try {
-         while ( ! scoreHolder.getQuit() ) {
+         while ( ! scoreHolder.getQuit() && open ) {
             
             // clean up and assebmle the score
             scoreHolder.assemble(); 
