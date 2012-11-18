@@ -19,29 +19,32 @@ class MidiThread implements Runnable {
       t = new Thread( this, "Midi Thread");
       t.start();
    }
-   
+   /*
    public void close() {
        open = false;
    }
-   
+   */
    public void run() {
       try {
-         while ( ! scoreHolder.getQuit() && open ) {
-            
-            // clean up and assebmle the score
-            scoreHolder.assemble(); 
-            
-            if (   scoreHolder.getEndTime() != 0 &&      // make sure there is music to play
-                   scoreHolder.getPlayScore() ) {        // and that it is time to play it
-               
-               scoreHolder.playScore();                  // play the music
-               System.out.println("DEBUG--Play Music--Phrase # " + scoreHolder.getPhraseNumber() );
+         while ( open ) {
+            if ( scoreHolder.getQuit() ) {
+                // Server on but waiting for start
             }
             else {
-               scoreHolder.playEmptyMessure();
-               System.out.println("DEBUG--Play Music--Phrase # " + scoreHolder.getPhraseNumber() );
-            }
+                // clean up and assebmle the score
+                scoreHolder.assemble(); 
             
+                if (   scoreHolder.getEndTime() != 0 &&      // make sure there is music to play
+                       scoreHolder.getPlayScore() ) {        // and that it is time to play it
+               
+                 scoreHolder.playScore();                  // play the music
+                   System.out.println("DEBUG--Play Music--Phrase # " + scoreHolder.getPhraseNumber() );
+                }
+               else {
+                   scoreHolder.playEmptyMessure();
+                   System.out.println("DEBUG--Play Music--Phrase # " + scoreHolder.getPhraseNumber() );
+               }
+            }
          } // end while
       } // end try
       catch ( Exception e ) {

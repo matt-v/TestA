@@ -21,7 +21,8 @@ public class ServerGUI extends javax.swing.JFrame {
     public ServerGUI() {
         initComponents();
         
-        // Initialize and run Socket Server for as long as the program is on
+        // Initialize and run Socket Server and Midi Thread for as long as the program is on
+        midithread = new MidiThread();
         serverSocket = new SocketListenerThread();
         // Passes the displays for measure and client list to ScoreHolder
         scoreHolder.setDisplays( jTextPane1, jTextArea1 );
@@ -152,7 +153,7 @@ public class ServerGUI extends javax.swing.JFrame {
         if ( started ) {
             scoreHolder.setQuit(true);
             
-            midithread.close();
+            //midithread.close();
             
             started = false;
             
@@ -165,7 +166,7 @@ public class ServerGUI extends javax.swing.JFrame {
         if ( ! started ) {
             scoreHolder.setQuit(false);
             
-            midithread = new MidiThread();
+            //midithread = new MidiThread();
 
             started = true;
         }      

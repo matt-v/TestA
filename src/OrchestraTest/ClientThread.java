@@ -49,27 +49,35 @@ class ClientThread implements Runnable, JMC {
          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream() ) );
 
          // while the thread is suppose to be running
-         while( ! scoreHolder.getQuit() ) {
+         while( live ) {
+             // get input from Scratch
+             char [] cStr = new char[4096];                               // buffer size of 255 seems reasonable...
+             in.read(cStr);
+             String currentLine = new String( cStr );
             
-            // get input from Scratch
-            char [] cStr = new char[4096];                               // buffer size of 255 seems reasonable...
-            in.read(cStr);
-            String currentLine = new String( cStr );
+             if ( scoreHolder.getQuit() ) {
+                // Client connected but waiting for ScoreHolder
+                
+                // Checks if the connection is closed to the client
+                if (currentLine.contains("ClosingClientConnection")) {
+                    break;
+                }
+             }
+             else {
+                // Checks if the connection is closed to the client
+                if (currentLine.contains("ClosingClientConnection")) {
+                    break;
+                }
             
-            // Checks if the connection is closed to the client
-            if (currentLine.contains("ClosingClientConnection")) {
-                break;
-            }
+                // if more than one command slip come through at a time
+                String [] commands = currentLine.split( "!" );
             
-            // if more than one command slip come through at a time
-            String [] commands = currentLine.split( "!" );
-            
-            // call the interpretor
-            for ( int i = 1; i < commands.length; ++i ) {
-               TypeAndValue temp = Interpreter.getInstance().interp( commands[i], t.getName() );
-               System.out.println( "Returned a " + temp.getType() );
-            }
-               
+                // call the interpretor
+                for ( int i = 1; i < commands.length; ++i ) {
+                   TypeAndValue temp = Interpreter.getInstance().interp( commands[i], t.getName() );
+                   System.out.println( "Returned a " + temp.getType() );
+                }
+             }       
          } // end while
       } // end try
       catch ( Exception e ) {
